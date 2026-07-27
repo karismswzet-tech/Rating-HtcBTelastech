@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { api, API } from "@/lib/api";
 import AstmReference from "@/components/AstmReference";
+import AstmStandardChart from "@/components/AstmStandardChart";
 import CategoryBadge from "@/components/CategoryBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -228,6 +229,8 @@ export default function AnalyzerPage() {
         </Card>
 
         {result && <ResultCard result={result} onPdf={downloadPdf} />}
+
+        <AstmStandardChart />
       </div>
 
       {/* Right: ASTM reference */}

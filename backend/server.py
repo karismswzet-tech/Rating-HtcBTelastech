@@ -40,6 +40,15 @@ db = client[os.environ['DB_NAME']]
 
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
 
+# Preload ASTM D130 reference chart image (base64) so the vision model
+# can compare uploaded strips against the actual printed standard.
+ASTM_REFERENCE_IMAGE_PATH = ROOT_DIR / "assets" / "astm_reference_chart.png"
+try:
+    with open(ASTM_REFERENCE_IMAGE_PATH, "rb") as _f:
+        ASTM_REFERENCE_IMAGE_B64 = base64.b64encode(_f.read()).decode("ascii")
+except FileNotFoundError:
+    ASTM_REFERENCE_IMAGE_B64 = ""
+
 app = FastAPI(title="Copper Strip Corrosion Rating Analyzer")
 api_router = APIRouter(prefix="/api")
 
@@ -155,12 +164,26 @@ async def analyze_with_ai(image_data_url: str) -> dict:
     ).with_model("openai", "gpt-5.2")
 
     image_content = ImageContent(image_base64=b64)
+
+    file_contents = [image_content]
+    prompt_text = (
+        "Analyze this copper strip photograph per ASTM D130. "
+        "Return only the JSON as specified in the system prompt."
+    )
+    if ASTM_REFERENCE_IMAGE_B64:
+        # Provide the printed ASTM D130 color-gradient standard as the second
+        # image so the model can compare the sample against the actual chart.
+        file_contents.append(ImageContent(image_base64=ASTM_REFERENCE_IMAGE_B64))
+        prompt_text = (
+            "IMAGE 1 is the copper strip sample photograph to classify. "
+            "IMAGE 2 is the official ASTM D130 / IP 154 color-gradient reference chart "
+            "showing all 12 standard tarnish patches (1a, 1b, 2a-2e, 3a, 3b, 4a-4c). "
+            "Compare IMAGE 1 to the closest patch in IMAGE 2, then return ONLY the JSON "
+            "specified in the system prompt."
+        )
     user_msg = UserMessage(
-        text=(
-            "Analyze this copper strip photograph per ASTM D130. "
-            "Return only the JSON as specified in the system prompt."
-        ),
-        file_contents=[image_content],
+        text=prompt_text,
+        file_contents=file_contents,
     )
 
     try:
