@@ -1,0 +1,124 @@
+{
+  "project_name": "Copper Strip Corrosion Rating Analyzer",
+  "theme": "Light theme (Clinical / Laboratory setup), high contrast for readability and accuracy.",
+  "archetype": "ARCHETYPE 4: SWISS & HIGH-CONTRAST (Authority, Clarity, Truth) adapted for Laboratory use. Very clean, sterile white and light grey backgrounds, with strong, unambiguous accent colors for data.",
+  "typography": {
+    "fonts": {
+      "headings": "Manrope",
+      "body": "IBM Plex Sans",
+      "mono": "JetBrains Mono"
+    },
+    "scale": {
+      "h1": "text-4xl md:text-5xl font-extrabold tracking-tight",
+      "h2": "text-2xl md:text-3xl font-bold tracking-tight",
+      "h3": "text-xl md:text-2xl font-semibold tracking-tight",
+      "body": "text-base leading-relaxed",
+      "small": "text-sm text-slate-500",
+      "rating_display": "text-7xl md:text-8xl font-black tracking-tighter"
+    },
+    "rules": [
+      "NEVER use generic fonts (Inter/Roboto) for headings. Manrope gives it a technical yet approachable feel.",
+      "Headings must use tight letter spacing.",
+      "Data tables and specific sample IDs should use IBM Plex Sans or JetBrains Mono for readability of alphanumeric strings."
+    ]
+  },
+  "colors": {
+    "background": "#F8FAFC",
+    "surface": "#FFFFFF",
+    "text_primary": "#0F172A",
+    "text_secondary": "#475569",
+    "primary": "#2563EB",
+    "primary_hover": "#1D4ED8",
+    "border": "#E2E8F0",
+    "tarnish_categories": {
+      "slight": { "bg": "#FEF3C7", "text": "#D97706", "label": "Slight Tarnish" },
+      "moderate": { "bg": "#F3E8FF", "text": "#7E22CE", "label": "Moderate Tarnish" },
+      "dark": { "bg": "#FEE2E2", "text": "#DC2626", "label": "Dark Tarnish" },
+      "corrosion": { "bg": "#F1F5F9", "text": "#334155", "label": "Corrosion" }
+    },
+    "astm_d130_reference": {
+      "1a": "#E2955B",
+      "1b": "#CD773E",
+      "2a": "#A84C32",
+      "2b": "#795270",
+      "2c": "#57678B",
+      "2d": "#A1A1A5",
+      "2e": "#C5A059",
+      "3a": "#8E354A",
+      "3b": "#50594B",
+      "4a": "#322B29",
+      "4b": "#1E1E22",
+      "4c": "#111111"
+    }
+  },
+  "layouts": {
+    "dashboard": "High Density Grid (grid-cols-1 md:grid-cols-3 lg:grid-cols-12 gap-6). Left column for Upload/Analysis (col-span-8), Right column for ASTM Reference Chart (col-span-4).",
+    "spacing": "Generous Spacing Philosophy. Use p-6 or p-8 inside cards. Use gap-6 or gap-8 between major sections."
+  },
+  "visual_enhancers": {
+    "borders": "1px solid #E2E8F0 on all cards to maintain crisp clinical separation.",
+    "shadows": "Subtle ambient shadows (shadow-sm) on rest, shadow-md on hover. No harsh shadows.",
+    "radius": "rounded-xl for main containers, rounded-md for inputs/buttons.",
+    "glassmorphism": "Avoid in data-heavy areas. Use only for sticky top navigation (bg-white/70 backdrop-blur-xl)."
+  },
+  "components": {
+    "upload_zone": {
+      "style": "Dashed border (border-2 border-dashed border-slate-300), bg-slate-50, hover:bg-slate-100 transition-colors duration-200. Min-height 250px. Centered content.",
+      "icons": "Use large Phosphor or Lucide icon (e.g., UploadCloud)."
+    },
+    "astm_reference_card": {
+      "style": "Sticky on desktop. Grid of 12 colors representing the ASTM D130 ratings. Each color block must show its rating (e.g., '1a') in contrasting text.",
+      "layout": "Grid cols-3 or cols-4."
+    },
+    "result_display": {
+      "style": "Large, bold typography for the rating (e.g., '2b'). Adjacent badge indicating the category. Notes input field below it.",
+      "buttons": "Save to Database (Primary color), Export PDF (Secondary/Outline)."
+    },
+    "history_table": {
+      "style": "Shadcn Table. Clean, alternating row colors (bg-white / bg-slate-50). Status badges for the ratings.",
+      "actions": "View details, Delete (destructive color)."
+    }
+  },
+  "motion": {
+    "hover": "Subtle lift (-translate-y-0.5) and shadow increase on cards.",
+    "transitions": "transition-all duration-200 ease-out on buttons and interactive elements. Avoid universal 'transition: all' that breaks transforms.",
+    "upload": "Highlight border and scale up icon slightly on dragOver."
+  },
+  "media": {
+    "icons_library": "lucide-react (default) or @phosphor-icons/react",
+    "image_urls": {
+      "empty_state_upload": {
+        "url": "https://images.unsplash.com/photo-1614535683569-129faaa108f7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHxjb3BwZXIlMjBtZXRhbCUyMHRleHR1cmV8ZW58MHx8fHwxNzg1MTEwOTU3fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Copper metal texture - useful for an empty state background inside the upload box or a small decorative thumbnail."
+      },
+      "hero_laboratory": {
+        "url": "https://images.unsplash.com/photo-1614935151651-0bea6508db6b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODl8MHwxfHNlYXJjaHwxfHxsYWJvcmF0b3J5JTIwdGVzdGluZyUyMGFuYWx5c2lzfGVufDB8fHx8MTc4NTExMDk2Mnww&ixlib=rb-4.1.0&q=85",
+        "description": "Lab testing analysis - can be used as a subtle header background or for the app's initial welcome screen/login if needed."
+      }
+    }
+  },
+  "accessibility": {
+    "contrast": "Ensure text over color badges meets 4.5:1 ratio. The ASTM colors must have dark text if the color is light, and white text if the color is dark.",
+    "testing": "All interactive elements, buttons, table rows, and form inputs MUST have descriptive 'data-testid' attributes (e.g., data-testid='upload-dropzone', data-testid='save-analysis-btn')."
+  },
+  "instructions_to_main_agent": [
+    "Design a web application tailored for laboratory technicians to analyze Copper Strip Corrosion according to ASTM D130.",
+    "Use standard HTML/Tailwind for structural layout and Shadcn UI components for complex interactions (Tables, Dropdowns, Modals, Inputs).",
+    "The application should have two main views: 1) The Analyzer (Upload, Result, Save) and 2) History (Table of past results, Export CSV/PDF).",
+    "MOCK AI FUNCTIONALITY: Simulate the AI vision by automatically showing a mock result (e.g., Rating '2b', Category 'Moderate Tarnish') 2 seconds after an image is uploaded.",
+    "Do NOT use transparent backgrounds in headers or dropdowns.",
+    "Recreate the ASTM D130 color chart in the UI using CSS background colors provided in 'astm_d130_reference'. This chart should be permanently visible as a reference guide.",
+    "Maintain a highly clinical, crisp, and high-contrast 'Swiss' design language. The data and results should be the focal point.",
+    "Ensure 'data-testid' is comprehensively applied across all logical interactions."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "You MUST NOT apply universal transition. Eg: transition: all. Always add transitions for specific interactive elements.",
+    "NEVER use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯 etc for icons. Use lucide-react.",
+    "Use sonner for toast notifications.",
+    "DO NOT write .tsx files, use .js or .jsx if required, but primarily focus on standard Javascript React patterns based on project setup."
+  ]
+}
