@@ -42,7 +42,9 @@ EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
 
 # Preload ASTM D130 reference chart image (base64) so the vision model
 # can compare uploaded strips against the actual printed standard.
-ASTM_REFERENCE_IMAGE_PATH = ROOT_DIR / "assets" / "astm_reference_chart.png"
+# LLM version is a compressed JPEG to keep the API payload lean while
+# preserving color fidelity (quality 92, max 1400px wide).
+ASTM_REFERENCE_IMAGE_PATH = ROOT_DIR / "assets" / "astm_reference_chart_llm.jpg"
 try:
     with open(ASTM_REFERENCE_IMAGE_PATH, "rb") as _f:
         ASTM_REFERENCE_IMAGE_B64 = base64.b64encode(_f.read()).decode("ascii")
@@ -175,11 +177,23 @@ async def analyze_with_ai(image_data_url: str) -> dict:
         # image so the model can compare the sample against the actual chart.
         file_contents.append(ImageContent(image_base64=ASTM_REFERENCE_IMAGE_B64))
         prompt_text = (
-            "IMAGE 1 is the copper strip sample photograph to classify. "
-            "IMAGE 2 is the official ASTM D130 / IP 154 color-gradient reference chart "
-            "showing all 12 standard tarnish patches (1a, 1b, 2a-2e, 3a, 3b, 4a-4c). "
-            "Compare IMAGE 1 to the closest patch in IMAGE 2, then return ONLY the JSON "
-            "specified in the system prompt."
+            "IMAGE 1 is the copper strip SAMPLE photograph to classify.\n"
+            "IMAGE 2 is the official ASTM D130 / IP 154 printed color standard "
+            "showing (left to right): Freshly Polished, 1a, 1b, 2a, 2b, 2c, 2d, 2e, "
+            "3a, 3b, 4a, 4b, 4c.\n\n"
+            "COLOR-ACCURACY PROTOCOL (follow strictly):\n"
+            "1. Mentally white-balance IMAGE 1 to neutralize the ambient lighting.\n"
+            "2. Identify the DOMINANT hue on the sample (orange, red/claret, "
+            "lavender/magenta, silver/brassy, peacock multicolor, black).\n"
+            "3. Assess luster (bright metallic vs. matte vs. glossy black).\n"
+            "4. Compare that hue+luster to EACH patch in IMAGE 2 in order and "
+            "pick the SINGLE closest patch. Do not average.\n"
+            "5. If two patches are close, prefer the LIGHTER rating (per ASTM "
+            "convention: any doubt → the lower number).\n"
+            "6. Set confidence: 0.9+ obvious match, 0.7-0.9 close match, "
+            "0.5-0.7 ambiguous, <0.5 poor image quality.\n\n"
+            "Return ONLY the JSON specified in the system prompt. "
+            "No prose, no code fence."
         )
     user_msg = UserMessage(
         text=prompt_text,
