@@ -87,7 +87,7 @@ async function captureFromCamera(snapshotUrl) {
   return await imageToDataUrl(url);
 }
 
-export default function IpWebcamCard({ onCapture }) {
+export default function IpWebcamCard({ onCapture, analyzing = false }) {
   const [baseUrl, setBaseUrl] = useState(
     () => (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY)) || ""
   );
@@ -174,7 +174,7 @@ export default function IpWebcamCard({ onCapture }) {
               IP WebCam
             </CardTitle>
             <p className="mt-1 text-sm text-slate-500">
-              Live view from your IP camera. Capture directly into the analyzer.
+              Live view from your IP camera. Capture <span className="font-semibold text-slate-700">auto-analyzes</span> the frame instantly.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -289,11 +289,15 @@ export default function IpWebcamCard({ onCapture }) {
                   className="bg-blue-600 hover:bg-blue-700"
                   size="sm"
                   onClick={doCapture}
-                  disabled={capturing || streamOk === false}
+                  disabled={capturing || analyzing || streamOk === false}
                   data-testid="ipcam-capture-btn"
                 >
                   <Camera className="mr-1.5 h-4 w-4" />
-                  {capturing ? "Capturing…" : "Capture Frame"}
+                  {analyzing
+                    ? "Analyzing…"
+                    : capturing
+                    ? "Capturing…"
+                    : "Capture & Analyze"}
                 </Button>
               </div>
             </div>

@@ -19,24 +19,28 @@ async function toResizedDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = reject;
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = reject;
-      img.onload = () => {
-        let { width, height } = img;
-        const scale = Math.min(1, MAX_DIM / Math.max(width, height));
-        width = Math.round(width * scale);
-        height = Math.round(height * scale);
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.9));
-      };
-      img.src = reader.result;
-    };
+    reader.onload = () => resizeDataUrl(reader.result).then(resolve, reject);
     reader.readAsDataURL(file);
+  });
+}
+
+async function resizeDataUrl(url, mime = "image/jpeg", quality = 0.92) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onerror = () => reject(new Error("Could not load image"));
+    img.onload = () => {
+      let { width, height } = img;
+      const scale = Math.min(1, MAX_DIM / Math.max(width, height));
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL(mime, quality));
+    };
+    img.src = url;
   });
 }
 
@@ -72,14 +76,23 @@ export default function AnalyzerPage() {
     if (file) onFile(file);
   };
 
-  const onCameraCapture = (dataUrl) => {
-    if (!dataUrl) return;
-    setDataUrl(dataUrl);
+  const onCameraCapture = async (rawDataUrl) => {
+    if (!rawDataUrl) return;
+    let resized = rawDataUrl;
+    try {
+      resized = await resizeDataUrl(rawDataUrl);
+    } catch (_) {
+      // fall back to raw dataURL
+    }
+    setDataUrl(resized);
     setResult(null);
+    toast.info("Auto-analyzing captured frame…");
+    await analyze(resized);
   };
 
-  const analyze = async () => {
-    if (!dataUrl) {
+  const analyze = async (overrideDataUrl) => {
+    const source = overrideDataUrl || dataUrl;
+    if (!source) {
       toast.error("Please upload a copper strip photo first.");
       return;
     }
@@ -87,7 +100,7 @@ export default function AnalyzerPage() {
     setResult(null);
     try {
       const { data } = await api.post("/analyze", {
-        image_data: dataUrl,
+        image_data: source,
         sample_name: sampleName,
         notes,
       });
@@ -237,7 +250,7 @@ export default function AnalyzerPage() {
 
         {result && <ResultCard result={result} onPdf={downloadPdf} />}
 
-        <IpWebcamCard onCapture={onCameraCapture} />
+        <IpWebcamCard onCapture={onCameraCapture} analyzing={analyzing} />
 
         <AstmStandardChart />
       </div>
