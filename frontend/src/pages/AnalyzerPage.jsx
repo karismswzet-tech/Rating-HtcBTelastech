@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { api, API } from "@/lib/api";
 import AstmReference from "@/components/AstmReference";
 import AstmStandardChart from "@/components/AstmStandardChart";
+import IpWebcamCard from "@/components/IpWebcamCard";
 import CategoryBadge from "@/components/CategoryBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,12 @@ export default function AnalyzerPage() {
     setDragActive(false);
     const file = e.dataTransfer?.files?.[0];
     if (file) onFile(file);
+  };
+
+  const onCameraCapture = (dataUrl) => {
+    if (!dataUrl) return;
+    setDataUrl(dataUrl);
+    setResult(null);
   };
 
   const analyze = async () => {
@@ -229,6 +236,8 @@ export default function AnalyzerPage() {
         </Card>
 
         {result && <ResultCard result={result} onPdf={downloadPdf} />}
+
+        <IpWebcamCard onCapture={onCameraCapture} />
 
         <AstmStandardChart />
       </div>
