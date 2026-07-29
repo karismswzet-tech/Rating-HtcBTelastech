@@ -8,23 +8,16 @@ import {
   WifiOff,
   CheckCircle2,
   AlertCircle,
-  Timer,
-  X as XIcon,
   Crosshair,
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card, CardContent, CardHeader, CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -35,9 +28,7 @@ import {
 } from "@/components/ui/dialog";
 
 const STORAGE_KEY = "copperstrip.ipcam.baseUrl";
-const DELAY_KEY = "copperstrip.ipcam.captureDelay";
 const GUIDE_KEY = "copperstrip.ipcam.showGuide";
-const DELAY_OPTIONS = [0, 3, 5, 10];
 
 function normalizeBase(url) {
   if (!url) return "";
@@ -110,19 +101,11 @@ export default function IpWebcamCard({ onCapture, analyzing = false }) {
   const [streamKey, setStreamKey] = useState(0); // force reload
   const [capturing, setCapturing] = useState(false);
   const [testing, setTesting] = useState(false);
-  const [countdown, setCountdown] = useState(null); // null | 3 | 2 | 1
-  const [captureDelay, setCaptureDelay] = useState(() => {
-    if (typeof window === "undefined") return 3;
-    const raw = localStorage.getItem(DELAY_KEY);
-    const n = raw == null ? 3 : parseInt(raw, 10);
-    return DELAY_OPTIONS.includes(n) ? n : 3;
-  });
   const [showGuide, setShowGuide] = useState(() => {
     if (typeof window === "undefined") return true;
     const raw = localStorage.getItem(GUIDE_KEY);
     return raw == null ? true : raw === "1";
   });
-  const countdownTimerRef = useRef(null);
   const imgRef = useRef(null);
 
   const { stream, snapshot } = useMemo(() => buildUrls(baseUrl), [baseUrl]);
@@ -186,55 +169,6 @@ export default function IpWebcamCard({ onCapture, analyzing = false }) {
     }
   };
 
-  const clearCountdown = () => {
-    if (countdownTimerRef.current) {
-      clearTimeout(countdownTimerRef.current);
-      countdownTimerRef.current = null;
-    }
-  };
-
-  const cancelCountdown = () => {
-    if (countdown != null) {
-      clearCountdown();
-      setCountdown(null);
-      toast.info("Capture cancelled");
-    }
-  };
-
-  const startCapture = () => {
-    if (!snapshot || capturing || analyzing || countdown != null) return;
-    if (captureDelay <= 0) {
-      doCapture();
-      return;
-    }
-    setCountdown(captureDelay);
-  };
-
-  // Countdown driver — pure effect, safe under React StrictMode.
-  useEffect(() => {
-    if (countdown == null) return;
-    if (countdown <= 0) {
-      setCountdown(null);
-      doCapture();
-      return;
-    }
-    countdownTimerRef.current = setTimeout(() => {
-      setCountdown((n) => (n != null ? n - 1 : null));
-    }, 1000);
-    return () => {
-      clearTimeout(countdownTimerRef.current);
-      countdownTimerRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [countdown]);
-
-  const changeDelay = (val) => {
-    const n = parseInt(val, 10);
-    if (!Number.isFinite(n)) return;
-    setCaptureDelay(n);
-    localStorage.setItem(DELAY_KEY, String(n));
-  };
-
   const toggleGuide = () => {
     setShowGuide((v) => {
       const next = !v;
@@ -242,8 +176,6 @@ export default function IpWebcamCard({ onCapture, analyzing = false }) {
       return next;
     });
   };
-
-  useEffect(() => () => clearCountdown(), []);
 
   return (
     <Card
@@ -431,7 +363,7 @@ export default function IpWebcamCard({ onCapture, analyzing = false }) {
                   </div>
                 </div>
               )}
-              {streamOk === false && countdown == null && (
+              {streamOk === false && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/70 text-center text-slate-100">
                   <div className="max-w-sm px-4">
                     <AlertCircle className="mx-auto mb-2 h-8 w-8 text-rose-400" />
@@ -443,72 +375,17 @@ export default function IpWebcamCard({ onCapture, analyzing = false }) {
                   </div>
                 </div>
               )}
-              {countdown != null && (
-                <div
-                  className="absolute inset-0 flex flex-col items-center justify-center bg-black/55 backdrop-blur-[2px]"
-                  data-testid="ipcam-countdown-overlay"
-                >
-                  <div
-                    key={countdown}
-                    className="rating-display text-white text-[10rem] leading-none drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)] fade-in"
-                    data-testid="ipcam-countdown-number"
-                  >
-                    {countdown}
-                  </div>
-                  <div className="mt-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80">
-                    Position the copper strip
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="mt-4 border-white/30 bg-white/10 text-white hover:bg-white/20"
-                    onClick={cancelCountdown}
-                    data-testid="ipcam-countdown-cancel"
-                  >
-                    <XIcon className="mr-1 h-3.5 w-3.5" />
-                    Cancel
-                  </Button>
-                </div>
-              )}
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-3">
-                <div className="font-mono text-[11px] text-slate-500 truncate max-w-[220px]">
-                  {baseUrl}
-                </div>
-                <div
-                  className="hidden items-center gap-1.5 sm:flex"
-                  data-testid="ipcam-delay-wrapper"
-                >
-                  <Timer className="h-3.5 w-3.5 text-slate-400" />
-                  <Select
-                    value={String(captureDelay)}
-                    onValueChange={changeDelay}
-                    disabled={countdown != null || capturing || analyzing}
-                  >
-                    <SelectTrigger
-                      className="h-7 w-[92px] text-xs"
-                      data-testid="ipcam-delay-select"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DELAY_OPTIONS.map((d) => (
-                        <SelectItem key={d} value={String(d)}>
-                          {d === 0 ? "Instant" : `${d}s delay`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="font-mono text-[11px] text-slate-500 truncate max-w-[280px]">
+                {baseUrl}
               </div>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setStreamKey((k) => k + 1)}
-                  disabled={countdown != null}
                   data-testid="ipcam-reload-btn"
                 >
                   <RefreshCw className="mr-1 h-3.5 w-3.5" />
@@ -517,10 +394,8 @@ export default function IpWebcamCard({ onCapture, analyzing = false }) {
                 <Button
                   className="bg-blue-600 hover:bg-blue-700"
                   size="sm"
-                  onClick={startCapture}
-                  disabled={
-                    capturing || analyzing || streamOk === false || countdown != null
-                  }
+                  onClick={doCapture}
+                  disabled={capturing || analyzing || streamOk === false}
                   data-testid="ipcam-capture-btn"
                 >
                   <Camera className="mr-1.5 h-4 w-4" />
@@ -528,8 +403,6 @@ export default function IpWebcamCard({ onCapture, analyzing = false }) {
                     ? "Analyzing…"
                     : capturing
                     ? "Capturing…"
-                    : captureDelay > 0
-                    ? `Capture in ${captureDelay}s`
                     : "Capture & Analyze"}
                 </Button>
               </div>
