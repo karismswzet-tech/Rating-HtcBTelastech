@@ -84,14 +84,25 @@ export default function AnalyzerPage() {
     } catch (_) {
       // fall back to raw dataURL
     }
+    // Auto-fill sample name with timestamp if the user hasn't set one
+    let effectiveSampleName = sampleName;
+    if (!sampleName.trim()) {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      effectiveSampleName =
+        `IPCAM-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}` +
+        `-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+      setSampleName(effectiveSampleName);
+    }
     setDataUrl(resized);
     setResult(null);
     toast.info("Auto-analyzing captured frame…");
-    await analyze(resized);
+    await analyze(resized, effectiveSampleName);
   };
 
-  const analyze = async (overrideDataUrl) => {
+  const analyze = async (overrideDataUrl, overrideSampleName) => {
     const source = overrideDataUrl || dataUrl;
+    const name = overrideSampleName != null ? overrideSampleName : sampleName;
     if (!source) {
       toast.error("Please upload a copper strip photo first.");
       return;
@@ -101,7 +112,7 @@ export default function AnalyzerPage() {
     try {
       const { data } = await api.post("/analyze", {
         image_data: source,
-        sample_name: sampleName,
+        sample_name: name,
         notes,
       });
       setResult(data);
