@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Timer,
   X as XIcon,
+  Crosshair,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -35,6 +36,7 @@ import {
 
 const STORAGE_KEY = "copperstrip.ipcam.baseUrl";
 const DELAY_KEY = "copperstrip.ipcam.captureDelay";
+const GUIDE_KEY = "copperstrip.ipcam.showGuide";
 const DELAY_OPTIONS = [0, 3, 5, 10];
 
 function normalizeBase(url) {
@@ -114,6 +116,11 @@ export default function IpWebcamCard({ onCapture, analyzing = false }) {
     const raw = localStorage.getItem(DELAY_KEY);
     const n = raw == null ? 3 : parseInt(raw, 10);
     return DELAY_OPTIONS.includes(n) ? n : 3;
+  });
+  const [showGuide, setShowGuide] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const raw = localStorage.getItem(GUIDE_KEY);
+    return raw == null ? true : raw === "1";
   });
   const countdownTimerRef = useRef(null);
   const imgRef = useRef(null);
@@ -228,6 +235,14 @@ export default function IpWebcamCard({ onCapture, analyzing = false }) {
     localStorage.setItem(DELAY_KEY, String(n));
   };
 
+  const toggleGuide = () => {
+    setShowGuide((v) => {
+      const next = !v;
+      localStorage.setItem(GUIDE_KEY, next ? "1" : "0");
+      return next;
+    });
+  };
+
   useEffect(() => () => clearCountdown(), []);
 
   return (
@@ -282,6 +297,23 @@ export default function IpWebcamCard({ onCapture, analyzing = false }) {
               <Settings2 className="mr-1 h-3.5 w-3.5" />
               Settings
             </Button>
+            {configured && (
+              <Button
+                variant={showGuide ? "default" : "outline"}
+                size="sm"
+                onClick={toggleGuide}
+                data-testid="ipcam-guide-btn"
+                title="Toggle centering guide"
+                className={
+                  showGuide
+                    ? "bg-slate-900 hover:bg-slate-800 text-white"
+                    : ""
+                }
+              >
+                <Crosshair className="mr-1 h-3.5 w-3.5" />
+                Guide
+              </Button>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -313,7 +345,7 @@ export default function IpWebcamCard({ onCapture, analyzing = false }) {
         ) : (
           <div className="space-y-3">
             <div
-              className="relative overflow-hidden rounded-lg border border-slate-200 bg-black"
+              className="relative overflow-hidden rounded-lg border border-slate-200 bg-black min-h-[300px]"
               data-testid="ipcam-preview"
             >
               <img
@@ -326,6 +358,79 @@ export default function IpWebcamCard({ onCapture, analyzing = false }) {
                 onError={() => setStreamOk(false)}
                 data-testid="ipcam-stream-img"
               />
+              {showGuide && streamOk !== false && (
+                <div
+                  className="pointer-events-none absolute inset-0"
+                  data-testid="ipcam-crosshair"
+                >
+                  <svg
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                    className="h-full w-full"
+                    aria-hidden="true"
+                  >
+                    {/* Vignette-safe rule-of-thirds */}
+                    <g
+                      stroke="rgba(255,255,255,0.22)"
+                      strokeWidth="0.15"
+                      strokeDasharray="1.5 2"
+                      fill="none"
+                    >
+                      <line x1="33.33" y1="4" x2="33.33" y2="96" />
+                      <line x1="66.66" y1="4" x2="66.66" y2="96" />
+                      <line x1="4" y1="33.33" x2="96" y2="33.33" />
+                      <line x1="4" y1="66.66" x2="96" y2="66.66" />
+                    </g>
+
+                    {/* Vertical strip framing target (~ aspect of a copper strip) */}
+                    <rect
+                      x="42"
+                      y="16"
+                      width="16"
+                      height="68"
+                      fill="none"
+                      stroke="rgba(56,189,248,0.9)"
+                      strokeWidth="0.35"
+                      strokeDasharray="1.2 0.8"
+                      rx="0.5"
+                    />
+
+                    {/* Corner brackets for a solid framing feel */}
+                    <g
+                      stroke="rgba(56,189,248,1)"
+                      strokeWidth="0.55"
+                      fill="none"
+                      strokeLinecap="round"
+                    >
+                      <path d="M 42 20 L 42 16 L 46 16" />
+                      <path d="M 54 16 L 58 16 L 58 20" />
+                      <path d="M 42 80 L 42 84 L 46 84" />
+                      <path d="M 54 84 L 58 84 L 58 80" />
+                    </g>
+
+                    {/* Central cross-hair */}
+                    <g
+                      stroke="rgba(255,255,255,0.95)"
+                      strokeWidth="0.28"
+                      fill="none"
+                      strokeLinecap="round"
+                      style={{
+                        filter:
+                          "drop-shadow(0 0.1px 0.3px rgba(0,0,0,0.9))",
+                      }}
+                    >
+                      <line x1="46" y1="50" x2="54" y2="50" />
+                      <line x1="50" y1="46" x2="50" y2="54" />
+                      <circle cx="50" cy="50" r="3.2" />
+                    </g>
+                    <circle cx="50" cy="50" r="0.55" fill="#38bdf8" />
+                  </svg>
+
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/65 px-2.5 py-0.5 text-[10px] font-medium tracking-wide text-white/90 backdrop-blur-sm">
+                    Center the strip within the sky-blue frame
+                  </div>
+                </div>
+              )}
               {streamOk === false && countdown == null && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/70 text-center text-slate-100">
                   <div className="max-w-sm px-4">
