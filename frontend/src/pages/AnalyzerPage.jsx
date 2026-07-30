@@ -91,7 +91,10 @@ export default function AnalyzerPage() {
   };
 
   const analyze = async (overrideDataUrl) => {
-    const source = overrideDataUrl || dataUrl;
+    // Guard: when this is bound to a DOM onClick, React passes a SyntheticEvent
+    // as the first argument. Only accept strings as an explicit override.
+    const source =
+      typeof overrideDataUrl === "string" ? overrideDataUrl : dataUrl;
     if (!source) {
       toast.error("Please upload a copper strip photo first.");
       return;
@@ -226,7 +229,7 @@ export default function AnalyzerPage() {
                   </div>
                   <Button
                     className="w-full bg-slate-900 hover:bg-slate-800"
-                    onClick={analyze}
+                    onClick={() => analyze()}
                     disabled={analyzing}
                     data-testid="analyze-btn"
                   >
