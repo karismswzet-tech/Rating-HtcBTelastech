@@ -1,6 +1,17 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FileText, FileDown, Eye, Filter } from "lucide-react";
+import {
+  Loader2,
+  Search,
+  Trash2,
+  FileText,
+  FileDown,
+  Eye,
+  Filter,
+  Pencil,
+  Check,
+  X as XIcon,
+} from "lucide-react";
 
 import { api, API } from "@/lib/api";
 import { ASTM_RATINGS, CATEGORY_STYLE } from "@/lib/astm";
@@ -104,6 +115,22 @@ export default function HistoryPage() {
       fetchItems();
     } catch (e) {
       toast.error("Delete failed");
+    }
+  };
+
+  const updateSampleName = async (id, newName) => {
+    const trimmed = (newName || "").trim();
+    // Optimistically update the row
+    setItems((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, sample_name: trimmed } : r))
+    );
+    try {
+      await api.patch(`/analyses/${id}`, { sample_name: trimmed });
+      toast.success("Sample name updated");
+    } catch (e) {
+      toast.error("Failed to update sample name");
+      // Refetch to reconcile in case of error
+      fetchItems();
     }
   };
 
@@ -279,7 +306,11 @@ export default function HistoryPage() {
                       {formatDate(row.created_at)}
                     </TableCell>
                     <TableCell className="font-medium text-slate-800">
-                      {row.sample_name || <span className="text-slate-400">—</span>}
+                      <EditableSampleCell
+                        rowId={row.id}
+                        value={row.sample_name}
+                        onSave={(v) => updateSampleName(row.id, v)}
+                      />
                     </TableCell>
                     <TableCell>
                       <span className="rating-display text-2xl text-slate-900">
@@ -443,4 +474,129 @@ function formatDate(iso) {
   } catch {
     return iso;
   }
+}
+
+
+function EditableSampleCell({ rowId, value, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value || "");
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (!editing) setDraft(value || "");
+  }, [value, editing]);
+
+  useEffect(() => {
+    if (editing) {
+      // Focus + select all on next tick
+      const id = requestAnimationFrame(() => {
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [editing]);
+
+  const commit = async () => {
+    const next = draft.trim();
+    const original = (value || "").trim();
+    if (next === original) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave(next);
+    } finally {
+      setSaving(false);
+      setEditing(false);
+    }
+  };
+
+  const cancel = () => {
+    setDraft(value || "");
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <div
+        className="flex items-center gap-1"
+        data-testid={`sample-edit-wrapper-${rowId}`}
+      >
+        <Input
+          ref={inputRef}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              commit();
+            } else if (e.key === "Escape") {
+              e.preventDefault();
+              cancel();
+            }
+          }}
+          onBlur={commit}
+          disabled={saving}
+          placeholder="Sample name"
+          className="h-8 min-w-[160px] max-w-[260px] px-2 text-sm"
+          data-testid={`sample-edit-input-${rowId}`}
+        />
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0"
+          // onMouseDown fires before the input's onBlur so we don't lose the click
+          onMouseDown={(e) => {
+            e.preventDefault();
+            commit();
+          }}
+          disabled={saving}
+          data-testid={`sample-edit-save-${rowId}`}
+          title="Save (Enter)"
+        >
+          {saving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Check className="h-4 w-4 text-emerald-600" />
+          )}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            cancel();
+          }}
+          disabled={saving}
+          data-testid={`sample-edit-cancel-${rowId}`}
+          title="Cancel (Esc)"
+        >
+          <XIcon className="h-4 w-4 text-slate-500" />
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      className="group inline-flex items-center gap-2 rounded-md px-2 py-1 -mx-2 text-left transition-colors duration-150 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+      data-testid={`sample-edit-trigger-${rowId}`}
+      title="Click to edit sample name"
+    >
+      {value ? (
+        <span className="truncate">{value}</span>
+      ) : (
+        <span className="italic text-slate-400">— add name</span>
+      )}
+      <Pencil className="h-3.5 w-3.5 flex-none text-slate-300 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
+    </button>
+  );
 }
