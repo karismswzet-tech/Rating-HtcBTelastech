@@ -355,6 +355,26 @@ async def export_pdf(analysis_id: str):
     h2 = ParagraphStyle('h2', parent=styles['Heading2'], fontSize=12,
                         textColor=rl_colors.HexColor("#475569"))
     body = styles['BodyText']
+    # Rating: big blue number with generous leading so it doesn't overlap the
+    # next element (fixes 4B / Category overlap in the exported PDF).
+    rating_style = ParagraphStyle(
+        'rating',
+        parent=styles['Title'],
+        fontSize=48,
+        leading=54,
+        spaceBefore=0,
+        spaceAfter=2,
+        textColor=rl_colors.HexColor("#2563EB"),
+        alignment=0,
+    )
+    category_style = ParagraphStyle(
+        'category',
+        parent=body,
+        fontSize=12,
+        leading=16,
+        spaceBefore=0,
+        spaceAfter=0,
+    )
     story = []
 
     story.append(Paragraph("Copper Strip Corrosion Analysis Report", title_style))
@@ -362,12 +382,9 @@ async def export_pdf(analysis_id: str):
     story.append(Spacer(1, 8*mm))
 
     # Rating giant text
-    story.append(Paragraph(
-        f'<font size="48" color="#2563EB"><b>{doc["rating"].upper()}</b></font>',
-        body
-    ))
-    story.append(Paragraph(f'<b>Category:</b> {doc["category"]}', body))
-    story.append(Spacer(1, 4*mm))
+    story.append(Paragraph(f'<b>{doc["rating"].upper()}</b>', rating_style))
+    story.append(Paragraph(f'<b>Category:</b> {doc["category"]}', category_style))
+    story.append(Spacer(1, 6*mm))
 
     # Metadata table
     meta = [

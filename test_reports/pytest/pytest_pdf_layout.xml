@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="3" failures="1" skipped="0" tests="4" time="1.751" timestamp="2026-07-31T04:50:29.550445+00:00" hostname="agent-env-37ab26ae-439d-4d70-9212-2eb649335764"><testcase classname="tests.test_pdf_layout.TestPdfLayout" name="test_long_name_with_notes" time="0.879"><error message="failed on setup with &quot;AssertionError: &lt;!DOCTYPE html&gt;&#10;  &lt;!--[if lt IE 7]&gt; &lt;html class=&quot;no-js ie6 oldie&quot; lang=&quot;en-US&quot;&gt; &lt;![endif]--&gt;&#10;  &lt;!--[if IE 7]&gt;    &lt;html class=&quot;no-js ie7 oldie&quot; lang=&quot;en-US&quot;&gt; &lt;![endif]--&gt;&#10;  &lt;!--[if IE 8]&gt;    &lt;html class=&quot;no-js ie8 oldie&quot; lang=&quot;en-US&quot;&gt; &lt;![endif]--&gt;&#10;  &lt;!--[if gt IE 8]&gt;&lt;!--&gt; &lt;html class=&quot;no-js&quot; lang=&quot;en-US&quot;&gt; &lt;!&#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_pdf_layout.py:61: in test_records
+    assert r.status_code == 200, r.text[:300]
+E   AssertionError: &lt;!DOCTYPE html&gt;
+E     &lt;!--[if lt IE 7]&gt; &lt;html class="no-js ie6 oldie" lang="en-US"&gt; &lt;![endif]--&gt;
+E     &lt;!--[if IE 7]&gt;    &lt;html class="no-js ie7 oldie" lang="en-US"&gt; &lt;![endif]--&gt;
+E     &lt;!--[if IE 8]&gt;    &lt;html class="no-js ie8 oldie" lang="en-US"&gt; &lt;![endif]--&gt;
+E     &lt;!--[if gt IE 8]&gt;&lt;!--&gt; &lt;html class="no-js" lang="en-US"&gt; &lt;!
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="tests.test_pdf_layout.TestPdfLayout" name="test_empty_name_and_notes" time="0.000"><error message="failed on setup with &quot;AssertionError: &lt;!DOCTYPE html&gt;&#10;  &lt;!--[if lt IE 7]&gt; &lt;html class=&quot;no-js ie6 oldie&quot; lang=&quot;en-US&quot;&gt; &lt;![endif]--&gt;&#10;  &lt;!--[if IE 7]&gt;    &lt;html class=&quot;no-js ie7 oldie&quot; lang=&quot;en-US&quot;&gt; &lt;![endif]--&gt;&#10;  &lt;!--[if IE 8]&gt;    &lt;html class=&quot;no-js ie8 oldie&quot; lang=&quot;en-US&quot;&gt; &lt;![endif]--&gt;&#10;  &lt;!--[if gt IE 8]&gt;&lt;!--&gt; &lt;html class=&quot;no-js&quot; lang=&quot;en-US&quot;&gt; &lt;!&#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_pdf_layout.py:61: in test_records
+    assert r.status_code == 200, r.text[:300]
+E   AssertionError: &lt;!DOCTYPE html&gt;
+E     &lt;!--[if lt IE 7]&gt; &lt;html class="no-js ie6 oldie" lang="en-US"&gt; &lt;![endif]--&gt;
+E     &lt;!--[if IE 7]&gt;    &lt;html class="no-js ie7 oldie" lang="en-US"&gt; &lt;![endif]--&gt;
+E     &lt;!--[if IE 8]&gt;    &lt;html class="no-js ie8 oldie" lang="en-US"&gt; &lt;![endif]--&gt;
+E     &lt;!--[if gt IE 8]&gt;&lt;!--&gt; &lt;html class="no-js" lang="en-US"&gt; &lt;!
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="tests.test_pdf_layout.TestPdfLayout" name="test_existing_record" time="0.129"><failure message="KeyError: 0">backend/tests/test_pdf_layout.py:136: in test_existing_record
+    pdf = _fetch_pdf(items[0]["id"])
+                     ^^^^^^^^
+E   KeyError: 0</failure></testcase><testcase classname="tests.test_pdf_layout.TestPdfLayout" name="test_content_disposition_filename" time="0.000"><error message="failed on setup with &quot;AssertionError: &lt;!DOCTYPE html&gt;&#10;  &lt;!--[if lt IE 7]&gt; &lt;html class=&quot;no-js ie6 oldie&quot; lang=&quot;en-US&quot;&gt; &lt;![endif]--&gt;&#10;  &lt;!--[if IE 7]&gt;    &lt;html class=&quot;no-js ie7 oldie&quot; lang=&quot;en-US&quot;&gt; &lt;![endif]--&gt;&#10;  &lt;!--[if IE 8]&gt;    &lt;html class=&quot;no-js ie8 oldie&quot; lang=&quot;en-US&quot;&gt; &lt;![endif]--&gt;&#10;  &lt;!--[if gt IE 8]&gt;&lt;!--&gt; &lt;html class=&quot;no-js&quot; lang=&quot;en-US&quot;&gt; &lt;!&#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_pdf_layout.py:61: in test_records
+    assert r.status_code == 200, r.text[:300]
+E   AssertionError: &lt;!DOCTYPE html&gt;
+E     &lt;!--[if lt IE 7]&gt; &lt;html class="no-js ie6 oldie" lang="en-US"&gt; &lt;![endif]--&gt;
+E     &lt;!--[if IE 7]&gt;    &lt;html class="no-js ie7 oldie" lang="en-US"&gt; &lt;![endif]--&gt;
+E     &lt;!--[if IE 8]&gt;    &lt;html class="no-js ie8 oldie" lang="en-US"&gt; &lt;![endif]--&gt;
+E     &lt;!--[if gt IE 8]&gt;&lt;!--&gt; &lt;html class="no-js" lang="en-US"&gt; &lt;!
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase></testsuite></testsuites>
